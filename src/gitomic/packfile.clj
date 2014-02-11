@@ -1,4 +1,5 @@
 (ns gitomic.packfile
+  (:require [gitomic.util :refer [decode-git-obj]])
   (:import [java.util.zip Inflater]))
 
 (def obj-types {0 :invalid
@@ -56,8 +57,8 @@
                           (into (subvec bits 1) obj-len-bits))]
        (if (bits 0)
          (decode-obj ins obj-len-bits obj-type)
-         {:type obj-type :length (bits->int obj-len-bits) :data (read-obj ins
-                                                                          (bits->int obj-len-bits))}))))
+         (let [len (bits->int obj-len-bits)]
+           (decode-git-obj obj-type (read-obj ins len) len))))))
 
 (defn decode-pack
   "Decodes a sequence of objects from the packfile."
